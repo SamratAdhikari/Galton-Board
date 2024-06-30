@@ -1,18 +1,20 @@
-import pygame as pg
-from random import randrange
+import math
+import pygame
 import pymunk
 import pymunk.pygame_util
-import math
+from random import randrange
 
 pymunk.pygame_util.positive_y_is_up = False
 
-RES = WIDTH, HEIGHT = 1200, 1000
+RES = WIDTH, HEIGHT = 1200, 900
 FPS = 60
 N_BALLS = 700
 
-pg.init()
-surface = pg.display.set_mode(RES)
-clock = pg.time.Clock()
+pygame.init()
+pygame.display.set_caption('Galton Board')
+pygame.display.set_icon(pygame.image.load('./assets/icon.webp'))
+surface = pygame.display.set_mode(RES)
+clock = pygame.time.Clock()
 draw_options = pymunk.pygame_util.DrawOptions(surface)
 
 space = pymunk.Space()
@@ -39,12 +41,12 @@ def create_ball(space):
 
 def create_segment(from_, to_, thickness, space):
     segment_shape = pymunk.Segment(space.static_body, from_, to_, thickness)
-    segment_shape.color = pg.color.Color('gray30')
+    segment_shape.color = pygame.color.Color('gray30')
     space.add(segment_shape)
 
 def create_peg(x, y, space):
     circle_shape = pymunk.Circle(space.static_body, radius=10, offset=(x, y))
-    circle_shape.color = pg.color.Color('gray30')
+    circle_shape.color = pygame.color.Color('gray30')
     circle_shape.elasticity = 0.1
     circle_shape.friction = 0.5
     space.add(circle_shape)
@@ -66,28 +68,23 @@ for platform in platforms:
 create_segment(B1, B2, 20, space)
 
 # balls
-balls = [(pg.Color('darkslateblue'), create_ball(space)) for _ in range(N_BALLS)]
+balls = [(pygame.Color('darkslateblue'), create_ball(space)) for _ in range(N_BALLS)]
 
 # bins for collecting balls
 bins = [0] * N_BALLS
 
 while True:
-    surface.fill(pg.Color('white'))
+    surface.fill(pygame.Color('grey75'))
 
-    for i in pg.event.get():
-        if i.type == pg.QUIT:
+    for i in pygame.event.get():
+        if i.type == pygame.QUIT:
             exit()
 
     space.step(1 / FPS)
     space.debug_draw(draw_options)
 
     for color, ball in balls:
-        pg.draw.circle(surface, color, (int(ball.position[0]), int(ball.position[1])), ball_radius)
-
-        # # collect balls in bins
-        # if ball.position[1] > HEIGHT - 50:
-        #     bin_index = int(ball.position[0] // step)
-        #     # bins[bin_index] += 1
+        pygame.draw.circle(surface, color, (int(ball.position[0]), int(ball.position[1])), ball_radius)
 
 
     # draw normal distribution curve
@@ -95,7 +92,7 @@ while True:
     std_dev = WIDTH / 5
     for x in range(WIDTH):
         y = HEIGHT - (math.exp(-0.5 * ((x - mean) / std_dev) ** 2) * 300)
-        pg.draw.circle(surface, pg.Color('red'), (x, int(y)), 1)
+        pygame.draw.circle(surface, pygame.Color('red'), (x, int(y)), 1)
 
-    pg.display.flip()
+    pygame.display.flip()
     clock.tick(FPS)
